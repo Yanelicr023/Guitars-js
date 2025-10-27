@@ -1,6 +1,6 @@
 import { db } from './guitarras.js'
 
-const carrito = []
+let carrito = []
 
 // Iterar arrays
 // Ciclos
@@ -11,6 +11,7 @@ const carrito = []
 // Metodos de arrays para Iterar
 const divContainer = document.querySelector('main div')
 const carritoContainer = document.querySelector('#carrito')
+const btnVai = document.querySelector('#vai')
 
 const createCard = (guitar) => {
     const div = document.createElement('div')
@@ -108,6 +109,7 @@ const buttonClicked = (e) => {
             // Si si, incrementa cantidad  
             carrito[idCarrito].cantidad++
         }
+        setlocalStorage()
         createCart(carrito)
     }
 }
@@ -121,20 +123,44 @@ const carritoClicked = (e) => {
         const idCarrito = e.target.parentElement.parentElement.getAttribute('data-id')
         const idxCarrito = carrito.findIndex(g => g.id === Number(idCarrito))
         if (btn === '-') {
-            carrito[idxCarrito].cantidad--
+            if (carrito[idxCarrito].cantidad > 1) {
+                carrito[idxCarrito].cantidad--
+            }
         } else if (btn === '+') {
-            carrito[idxCarrito].cantidad++
+            // if para no vender mas de 10 guitarras
+            if (carrito[idxCarrito].cantidad < 10) {
+                carrito[idxCarrito].cantidad++
+            }
         } else if (btn === 'X') {
-            carrito.splice(idxCarrito, 1)
+            carrito = carrito.filter(g => g.id !== Number(idCarrito))
+        } else if (btn === 'vaciar carrito'.toLocaleUpperCase()) {
+            carrito=[]
         }
-        createCart(carrito)
+
+    }
+    createCart(carrito)
+}
+
+const getLocalStorage = () => {
+    const carriStorage= localStorage.getItem('carrito')
+    if (carriStorage) {
+        carrito = JSON.parse(carriStorage)
+    } else{
+        carrito =[]
     }
 }
+const setlocalStorage = () => {
+    localStorage.setItem('carrito',JSON.stringify(carrito))
+}
+
 db.forEach((guitar) => {
     console.log(guitar.nombre)
     divContainer.appendChild(createCard(guitar))
 })
+
+getLocalStorage()
 createCart(carrito)
 
 divContainer.addEventListener('click', buttonClicked)
 carritoContainer.addEventListener('click', carritoClicked)
+btnVai.addEventListener('click', buttonClicked)
